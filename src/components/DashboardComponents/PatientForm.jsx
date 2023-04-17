@@ -76,9 +76,7 @@ const PatientForm = ({ onSubmit }) => {
             </div>
             <div className="w-full flex flex-col gap-y-2">
                 <div>
-                    <label>
-                        Edad <span className="text-red-500">*</span>
-                    </label>
+                    <label>Edad <span className="text-red-500">*</span> </label>
                     <div className="relative">
                         <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
                         <input
