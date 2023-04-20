@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { GiLungs } from 'react-icons/gi';
 import { LineChart, Line, YAxis, Tooltip } from 'recharts';
 
@@ -10,9 +11,24 @@ const data = [
 ];
 
 const OxygenLevel = ({ level }) => {
+  useEffect(() => {
+    if (level < 90) {
+      toast.error('La oxigenación en sangre del paciente es peligrosamente baja. Por favor, llame a un médico de inmediato.', {
+        position: toast.POSITION.BOTTOM_RIGHT,
+
+      });
+    } else if (level < 95) {
+      toast.warning('La oxigenación en sangre del paciente está por debajo del rango normal.', {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+    } else {
+      toast.success('La oxigenación en sangre del paciente está dentro del rango normal.');
+    }
+  }, [level]);
+
   return (
-    <div className="flex flex-col">
-      <div className="bg-white p-6 rounded-xl">
+    <div className="flex-col">
+      <div className="bg-white p-6 -xlrounded">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-blue-800 mb-4">
             Oxigenación en Sangre

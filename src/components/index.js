@@ -1,3 +1,4 @@
+import 'react-toastify/dist/ReactToastify.css';
 import Nav from "./Navbar";
 import PersonalCard from "./Card";
 import MedicalCard from "./MedicalCard";
