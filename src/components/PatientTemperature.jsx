@@ -24,34 +24,32 @@ const data = [
 const PatientTemperature = ({ temperature }) => {
   const temperatureRef = useRef(temperature);
   const [notification, setNotification] = useState(null);
-  const [isNotified, setIsNotified] = useState(false);
+  const toastId = useRef(null);
 
   useEffect(() => {
     if (temperatureRef.current !== temperature) {
       temperatureRef.current = temperature;
-      if (temperature < 36 || temperature > 38) {
+      if (temperature < 35 || temperature > 38.3) {
         setNotification('danger');
-      } else if (temperature < 36.5 || temperature > 37.5) {
+      } else if (temperature < 36.1 || temperature > 37.2) {
         setNotification('warning');
       } else {
         setNotification('success');
       }
-      setIsNotified(false);
     }
   }, [temperature]);
 
-  const renderToast = () => {
-    if (!isNotified && notification) {
+  useEffect(() => {
+    if (notification && !toast.isActive(toastId.current)) {
       if (notification === 'danger') {
-        toast.error('La temperatura del paciente es anormalmente alta o baja.');
+        toastId.current = toast.error('La temperatura del paciente es anormalmente alta o baja.');
       } else if (notification === 'warning') {
-        toast.warning('La temperatura del paciente está ligeramente fuera del rango normal.');
+        toastId.current = toast.warning('La temperatura del paciente está ligeramente fuera del rango normal.');
       } else if (notification === 'success') {
-        toast.success('La temperatura del paciente está dentro del rango normal.');
+        toastId.current = toast.success('La temperatura del paciente está dentro del rango normal.');
       }
-      setIsNotified(true);
     }
-  };
+  }, [notification]);
 
   let color = '';
   let barColor = '';
@@ -89,9 +87,6 @@ const PatientTemperature = ({ temperature }) => {
             </AreaChart>
           </ResponsiveContainer>
         </div>}
-      </div>
-      <div className="fixed bottom-4 right-4">
-        {renderToast()}
       </div>
     </div>
   );
