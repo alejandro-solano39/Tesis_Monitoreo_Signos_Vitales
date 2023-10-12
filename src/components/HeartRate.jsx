@@ -1,13 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { GiHeartOrgan, GiHeartBeats } from 'react-icons/gi';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-2 bg-white shadow-md rounded">
+        <p className="text-sm">{`${label} - ${payload[0].value} BPM`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 const HeartRate = ({ bpm }) => {
-  const bpmRef = useRef(bpm);
   const [notification, setNotification] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [lastAlert, setLastAlert] = useState(null);
   const [heartRateData, setHeartRateData] = useState(generateHeartRateData());
+  const isFirstRender = useRef(true);
 
   function generateHeartRateData(dataPoints = 12) {
     let data = [];
@@ -21,72 +34,58 @@ const HeartRate = ({ bpm }) => {
     return data;
   }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeartRateData(generateHeartRateData());
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
   useEffect(() => {
-    if (bpmRef.current !== bpm) {
-      bpmRef.current = bpm;
-      if (bpm < 60 || bpm > 100) {
-        setNotification('danger');
-      } else if (bpm < 70 || bpm > 90) {
-        setNotification('warning');
-      } else {
-        setNotification('success');
-      }
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }, [bpm]);
-
-  useEffect(() => {
-    if (bpm < 60 || bpm > 100) {
+    let currentAlert = bpm < 60 || bpm > 100 ? 'danger' : bpm < 70 || bpm > 90 ? 'warning' : 'success';
+    if (currentAlert !== lastAlert) {
+      if (currentAlert === 'danger') {
         toast.error('El ritmo cardíaco del paciente es anormalmente alto o bajo.');
-        setNotification('danger');
-    } else if (bpm < 70 || bpm > 90) {
+      } else if (currentAlert === 'warning') {
         toast.warning('El ritmo cardíaco del paciente está ligeramente fuera del rango normal.');
-        setNotification('warning');
-    } else {
+      } else {
         toast.success('El ritmo cardíaco del paciente está dentro del rango normal.');
-        setNotification('success');
+      }
+      setLastAlert(currentAlert);
+      setNotification(currentAlert);
     }
-}, [bpm]);
-
+    setHeartRateData(prevData => [...prevData.slice(1), {
+      time: `${parseInt(prevData[prevData.length - 1].time) + 1}`,
+      value: bpm
+    }]);
+  }, [bpm]);
 
   let color = notification === 'danger' ? '#F87171' : notification === 'warning' ? '#FBBF24' : '#34D399';
 
   return (
     <div className="flex flex-col" onClick={handleShow}>
-      <div className="p-6 rounded-xl">
+      <div className="p-5 rounded-xl">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-blue-800 mb-4">
+          <h1 className="text-2xl font-bold text-black-800 mb-4">
             Ritmo Cardíaco
             <GiHeartOrgan className="inline-block ml-2 text-red-500" />
           </h1>
-          <div className="text-4xl font-semibold text-purple-800 mb-2" style={{color: color}}>
-            {bpm} 
+          <div className="text-4xl font-semibold text-purple-800 mb-2" style={{ color: color }}>
+            {bpm}
             <GiHeartBeats className="inline-block ml-2" size="1.5em" />
           </div>
           <p className="text-xl text-gray-600 mb-4">latidos/min</p>
           <div className="w-full h-[83px] mb-4">
             <ResponsiveContainer>
               <AreaChart data={heartRateData}>
-                <XAxis dataKey="time" hide={true} />
-                <YAxis hide={true} />
-                <Tooltip />
-                <Area type="monotone" dataKey="value" fill={color} strokeWidth={0} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="value" fill={color} stroke={color} fillOpacity={0.3} strokeWidth={2} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
+            
           </div>
         </div>
       </div>
-
       {showModal && (
         <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={handleClose}>
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -105,10 +104,14 @@ const HeartRate = ({ bpm }) => {
                   <ResponsiveContainer>
                     <AreaChart data={heartRateData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="time" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="value" fill={color} strokeWidth={2} />
+                      <XAxis dataKey="time">
+                        <Label value="Tiempo" offset={-4} position="insideBottomRight" />
+                      </XAxis>
+                      <YAxis>
+                        <Label value="BPM" angle={-90} position="insideLeft" />
+                      </YAxis>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area type="monotone" dataKey="value" fill={color} stroke={color} fillOpacity={0.3} strokeWidth={2} activeDot={{ r: 5 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

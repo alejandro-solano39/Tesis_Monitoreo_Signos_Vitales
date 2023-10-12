@@ -4,31 +4,32 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AreaChart, Area, YAxis, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { time: '1', value: 36.5 },
-  { time: '2', value: 36.8 },
-  { time: '3', value: 36.7 },
-  { time: '4', value: 36.6 },
-  { time: '5', value: 36.9 },
-  { time: '6', value: 36.8 },
-  { time: '7', value: 36.7 },
-  { time: '8', value: 36.8 },
-  { time: '9', value: 37.0 },
-  { time: '10', value: 37.2 },
-  { time: '11', value: 37.1 },
-];
-
-const PatientTemperature = ({ temperature }) => {
+const PatientTemperature = ({ initialTemperature = 36.5 }) => {
+  const [temperature, setTemperature] = useState(initialTemperature);
   const temperatureRef = useRef(temperature);
   const [notification, setNotification] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(() => {
+    const simulateTemperature = setInterval(() => {
+      const randomTemp = (Math.random() * (38.5 - 35) + 35).toFixed(1);
+      setTemperature(parseFloat(randomTemp));
+    }, 5000);
+
+    return () => clearInterval(simulateTemperature);
+  }, []);
+
+  useEffect(() => {
+    setChartData(prevData => [...prevData.slice(-11), { time: new Date().toLocaleTimeString(), value: temperature }]);
+  }, [temperature]);
 
   useEffect(() => {
     if (temperatureRef.current !== temperature) {
       temperatureRef.current = temperature;
-      if (temperature < 35 || temperature > 38.3) {
+      if (temperature < 35.0 || temperature > 38.9) {
         setNotification('danger');
-      } else if (temperature < 36.1 || temperature > 37.2) {
+      } else if (temperature <= 36.0 || temperature >= 37.3) {
         setNotification('warning');
       } else {
         setNotification('success');
@@ -50,10 +51,10 @@ const PatientTemperature = ({ temperature }) => {
 
   let color = '';
   let colorValue = '';
-  if (temperature < 36 || temperature > 38) {
+  if (temperature < 35.0 || temperature > 38.9) {
     color = 'text-red-500';
     colorValue = '#EF4444';
-  } else if (temperature < 36.5 || temperature > 37.5) {
+  } else if (temperature <= 36.0 || temperature >= 37.3) {
     color = 'text-yellow-500';
     colorValue = '#FBBF24';
   } else {
@@ -61,19 +62,14 @@ const PatientTemperature = ({ temperature }) => {
     colorValue = '#10B981';
   }
 
-  const chartData = [...data, { time: '12', value: temperature }];
-
   const handleClose = () => setIsModalOpen(false);
   const handleShow = () => setIsModalOpen(true);
 
   return (
-    <div className="flex flex-col" onClick={handleShow}>
-      <div className="bg-white p-5 rounded-xl">
+    <div className="flex flex-col">
+      <div className="bg-white p-5 rounded-xl" onClick={handleShow}>
         <div className="text-center flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-blue-800 mb-4">
-            Temperatura del Paciente
-            <FaThermometerHalf className="inline-block ml-2" />
-          </h1>
+          <h1 className="text-2xl font-bold text-blue-800 mb-4">Temperatura del Paciente<FaThermometerHalf className="inline-block ml-2" /></h1>
           <div className={`text-6xl font-semibold ${color} mb-4`}>{temperature} °C</div>
           <ResponsiveContainer width="100%" height={100}>
             <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -86,7 +82,6 @@ const PatientTemperature = ({ temperature }) => {
         </div>
       </div>
       <ToastContainer theme="colored" position="bottom-right" autoClose={false} closeOnClick={false} />
-
       {isModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={handleClose}>
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -96,9 +91,7 @@ const PatientTemperature = ({ temperature }) => {
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                      Gráfica detallada de Temperatura
-                    </h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">Gráfica detallada de Temperatura</h3>
                   </div>
                 </div>
                 <div className="w-full h-[500px] mt-4">

@@ -1,23 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaHeartbeat } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { AreaChart, Area, YAxis, Tooltip, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts';
 import 'react-toastify/dist/ReactToastify.css';
 
-const data = [
-  { time: '1', value: 80 },
-  { time: '2', value: 85 },
-  { time: '3', value: 90 },
-  { time: '4', value: 92 },
-  { time: '5', value: 95 },
-  { time: '6', value: 100 },
-  { time: '73', value: 10 },
-  { time: '65', value: 110 },
-];
-
-const PatientBloodPressure = ({ systolic, diastolic }) => {
+const PatientBloodPressure = () => {
+  const [systolic, setSystolic] = useState(120);
+  const [diastolic, setDiastolic] = useState(80);
+  const [data, setData] = useState([]);
   const [notification, setNotification] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const toastIdRef = useRef(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newSystolic = Math.floor(Math.random() * (140 - 90 + 1) + 90);
+      const newDiastolic = Math.floor(Math.random() * (90 - 60 + 1) + 60);
+      setSystolic(newSystolic);
+      setDiastolic(newDiastolic);
+      const currentTime = new Date();
+      const formattedTime = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`;
+      setData(prevData => [...prevData, { time: formattedTime, value: newSystolic }]);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (systolic < 90 || systolic > 140 || diastolic < 60 || diastolic > 90) {
@@ -30,16 +37,18 @@ const PatientBloodPressure = ({ systolic, diastolic }) => {
   }, [systolic, diastolic]);
 
   useEffect(() => {
+    if (toastIdRef.current) toast.dismiss(toastIdRef.current);
+    
     if (notification === 'danger') {
-      toast.error('La presión arterial del paciente es anormalmente alta o baja.', {
+      toastIdRef.current = toast.error('La presión arterial del paciente es anormalmente alta o baja.', {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
     } else if (notification === 'warning') {
-      toast.warning('La presión arterial del paciente está ligeramente fuera del rango normal.', {
+      toastIdRef.current = toast.warning('La presión arterial del paciente está ligeramente fuera del rango normal.', {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
     } else if (notification === 'success') {
-      toast.success('La presión arterial del paciente está dentro del rango normal.', {
+      toastIdRef.current = toast.success('La presión arterial del paciente está dentro del rango normal.', {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
     }
@@ -47,11 +56,11 @@ const PatientBloodPressure = ({ systolic, diastolic }) => {
 
   let color = '';
   if (notification === 'danger') {
-    color = '#F87171';  // Red color
+    color = '#F87171';
   } else if (notification === 'warning') {
-    color = '#FBBF24';  // Yellow color
+    color = '#FBBF24';
   } else {
-    color = '#34D399';  // Green color
+    color = '#34D399';
   }
 
   const handleClose = () => setIsModalOpen(false);
@@ -79,7 +88,6 @@ const PatientBloodPressure = ({ systolic, diastolic }) => {
           </div>
         </div>
       </div>
-
       {isModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={handleClose}>
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

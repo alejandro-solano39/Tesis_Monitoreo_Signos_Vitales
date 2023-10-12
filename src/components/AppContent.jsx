@@ -1,22 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { AiOutlineCamera } from 'react-icons/ai';
 import { Card, CardBody, CardFooter, Typography, Button } from "@material-tailwind/react";
-
 import { MedicalCard, Nav, DistanceDisplay, HeartRate, OxygenLevel, PatientTemperature, PatientBloodPressure, Dashboard, CameraComponent } from ".";
 
-let alertId = 0; // define outside of the component
+let alertId = 0;
 
 const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
-
   const [alerts, setAlerts] = useState([]);
+  const [bpm, setBpm] = useState(80);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newBpm = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
+      setBpm(newBpm);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const addAlert = (message, type) => {
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { id: alertId++, message, type }, // use incremental id
+      { id: alertId++, message, type },
     ]);
   };
 
@@ -33,12 +40,7 @@ const AppContent = () => {
           {alerts.map((alert) => (
             <div key={alert.id} className={`bg-${alert.type}-200 p-4 rounded-md`}>
               {alert.message}
-              <button
-                className="ml-2 text-red-500"
-                onClick={() => removeAlert(alert.id)}
-              >
-                Cerrar
-              </button>
+              <button className="ml-2 text-red-500" onClick={() => removeAlert(alert.id)}>Cerrar</button>
             </div>
           ))}
         </div>
@@ -52,44 +54,25 @@ const AppContent = () => {
     <div className="bg-gradient-to-b from-blue-200 h-screen">
       {!isDashboard && <Nav />}
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div className="grid grid-rows-2 grid-cols-3 gap-8 p-8 h-full">
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-                <HeartRate bpm={80} />
-              </div>
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-                <OxygenLevel level={145300} />
-              </div>
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex items-center justify-center">
-                <CameraComponent />
-              </div>
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-                <PatientBloodPressure systolic={15} diastolic={82} />
-              </div>
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-                <PatientTemperature
-                  temperature={37}
-                  addAlert={addAlert}
-                />
-              </div>
-              <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl">
-                <Card>
-                  <CardBody>
-                    <Typography variant="h5" color="blue-gray" className="mb-2">
-                      Historial de Alertas Médicas
-                    </Typography>
-                    {/* alerts logic removed from here */}
-                  </CardBody>
-                  <CardFooter className="pt-0">
-                    <Button color="blue">Detalles</Button>
-                  </CardFooter>
-                </Card>
-              </div>
+        <Route path="/" element={
+          <div className="grid grid-rows-2 grid-cols-3 gap-8 p-8 h-full">
+            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+              <HeartRate bpm={bpm} />
             </div>
-          }
-        />
+            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+              <OxygenLevel level={145300} />
+            </div>
+            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex items-center justify-center">
+              <CameraComponent />
+            </div>
+            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+              <PatientBloodPressure systolic={15} diastolic={82} />
+            </div>
+            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+              <PatientTemperature initialTemperature={37.0} />
+            </div>
+          </div>
+        } />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
       {renderAlerts()}
@@ -98,3 +81,4 @@ const AppContent = () => {
 };
 
 export default AppContent;
+
