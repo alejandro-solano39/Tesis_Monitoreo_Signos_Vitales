@@ -81,7 +81,6 @@ const PatientTemperature = ({ initialTemperature = 36.5 }) => {
           </ResponsiveContainer>
         </div>
       </div>
-      <ToastContainer theme="colored" position="bottom-right" autoClose={false} closeOnClick={false} />
       {isModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={handleClose}>
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

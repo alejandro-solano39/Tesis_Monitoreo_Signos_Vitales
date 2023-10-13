@@ -12,6 +12,8 @@ import Register from './pages/auth/Register';
 const App = () => {
   return (
     <>
+          <ToastContainer  theme="colored" position="bottom-right" autoClose={5000} closeOnClick={false} />
+
       <Routes>
         <Route>
           <Route path="/" element={<Login />} />
