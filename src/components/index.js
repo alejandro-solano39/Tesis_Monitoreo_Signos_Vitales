@@ -23,10 +23,11 @@ import ListAlertsHistory from './DashboardComponents/ListAlertsHistory';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import CameraComponent from './CameraComponent';
+import NotificationCenter from "./NotificationCenter/NotificationCenter";
 
 
 export{
     Nav, PersonalCard, MedicalCard, DistanceDisplay, HeartRate, OxygenLevel ,PatientBloodPressure, PatientTemperature, WeatherComponent, Slider, 
     Dashboard, PatientTable,DoctorWelcomeCard, Note, AlertHistory, PatientList, HomeDashboard, PatientForm, NewUsers, HistoryAlerts,
-    ListAlertsHistory, Login, Register, CameraComponent
+    ListAlertsHistory, Login, Register, CameraComponent, NotificationCenter
 }
