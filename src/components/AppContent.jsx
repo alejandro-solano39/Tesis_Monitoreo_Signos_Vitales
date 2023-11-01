@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { AiOutlineCamera } from 'react-icons/ai';
-import { Card, CardBody, CardFooter, Typography, Button } from "@material-tailwind/react";
 import { MedicalCard, Nav, DistanceDisplay, HeartRate, OxygenLevel, PatientTemperature, PatientBloodPressure, Dashboard, CameraComponent } from ".";
 
 let alertId = 0;
@@ -54,27 +52,28 @@ const AppContent = () => {
     }
   };
 
+  const commonComponentContainerStyle = "row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center";
+
   return (
     <div className="bg-gradient-to-b from-blue-200 h-screen">
-      {/* Renderizar la barra de navegación si no estamos en el panel de control */}
       {!isDashboard && <Nav />}
       <Routes>
         <Route path="/" element={
           <div className="grid grid-rows-2 grid-cols-3 gap-8 p-8 h-full">
-            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+            <div className={commonComponentContainerStyle}>
               <HeartRate bpm={bpm} />
             </div>
-            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-              <OxygenLevel level={145300} />
+            <div className={commonComponentContainerStyle}>
+              <OxygenLevel level={98} />
             </div>
-            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex items-center justify-center">
-              {/* Componente de cámara (comentado) */}
+            <div className={commonComponentContainerStyle}>
+              {/* Comment or uncomment the next line depending on whether you want to include the CameraComponent */}
               {/* <CameraComponent /> */}
             </div>
-            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
-              <PatientBloodPressure systolic={15} diastolic={82} />
+            <div className={commonComponentContainerStyle}>
+              <PatientBloodPressure systolic={120} diastolic={80} />
             </div>
-            <div className="row-span-1 col-span-1 h-[320px] bg-white p-6 shadow-lg rounded-xl flex justify-center items-center">
+            <div className={commonComponentContainerStyle}>
               <PatientTemperature initialTemperature={37.0} />
             </div>
           </div>

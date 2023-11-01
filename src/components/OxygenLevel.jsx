@@ -68,9 +68,9 @@ const OxygenLevel = () => {
     const previewData = data.slice(-10);
 
     return (
-        <div className="flex flex-col" onClick={handleShow}>
-            <div className="bg-white p-5 rounded-xl">
-                <div className="text-center flex flex-col items-center">
+        <div className="flex flex-col w-full" onClick={handleShow}> {/* Aquí se utiliza w-full para asegurar que se use todo el ancho */}
+            <div className="bg-white p-5 rounded-xl flex-grow"> {/* Aquí se utiliza flex-grow para permitir que el elemento crezca y ocupe el espacio disponible */}
+                <div className="text-center flex flex-col items-center w-full"> {/* Se añade w-full aquí también */}
                     <h1 className="text-2xl font-bold text-blue-800 mb-4">Oxigenación en Sangre<GiLungs className="inline-block ml-2" /></h1>
                     <div className={`text-6xl font-semibold ${color} mb-4`}>{level}% <FaTint className="inline-block ml-2" size={24} /></div>
                     <ResponsiveContainer width="100%" height={100}>
@@ -82,33 +82,38 @@ const OxygenLevel = () => {
                     </ResponsiveContainer>
                 </div>
             </div>
-
             {isModalOpen && (
                 <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={handleClose}>
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                        {/* Aseguramos que el modal no aparezca estrecho, ajustando las clases para un ancho máximo más amplio */}
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" onClick={(e) => e.stopPropagation()}>
+
+                            {/* Contenido del modal */}
                             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                 <div className="sm:flex sm:items-start">
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">Gráfica detallada de Oxigenación en Sangre</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">Oxigenación en Sangre</h3>
                                     </div>
                                 </div>
+                                {/* Contenedor para la gráfica, asegurando que es tan ancho como el modal */}
                                 <div className="w-full h-[500px] mt-4">
                                     <ResponsiveContainer>
                                         <AreaChart data={data}>
-                                            <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="time" />
                                             <YAxis />
                                             <Tooltip />
-                                            <Area type="monotone" dataKey="value" fill={colorValue} strokeWidth={2} />
+                                            <Area type="monotone" dataKey="value" fill={colorValue} stroke={colorValue} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
                             <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={handleClose}>Cerrar</button>
+                                <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={handleClose}>
+                                    Cerrar
+                                </button>
                             </div>
                         </div>
                     </div>

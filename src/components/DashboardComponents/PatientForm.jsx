@@ -12,7 +12,7 @@ const PatientForm = () => {
     const [maternalLastName, setMaternalLastName] = useState('');
     const [age, setAge] = useState('');
     const [gender, setGender] = useState('');
-    const [status, setStatus] = useState('');
+    const [CURP, setCurp] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -71,7 +71,7 @@ const PatientForm = () => {
             isValid = false;
         }
 
-        if (!status) {
+        if (!CURP) {
             toast.error('Por favor, selecciona el estado del paciente', {
                 position: toast.POSITION.TOP_RIGHT,
             });
@@ -86,7 +86,7 @@ const PatientForm = () => {
         }
 
         if (!password) {
-            toast.error('Por favir, ingresa un contraseña para el paciente', {
+            toast.error('Por favor, ingresa un contraseña para el paciente', {
                 position: toast.POSITION.TOP_RIGHT,
                 icon: "🚀"
             });
@@ -99,13 +99,13 @@ const PatientForm = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-        submitPatient({ name, paternalLastName, maternalLastName, age, gender, status, email, password });
+        submitPatient({ name, paternalLastName, maternalLastName, age, gender, CURP, email, password });
         setName('');
         setPaternalLastName('');
         setMaternalLastName('');
         setAge('');
         setGender('');
-        setStatus('');
+        setCurp('');
         setEmail('');
         setPassword('');
     };
@@ -181,23 +181,13 @@ const PatientForm = () => {
                 </div>
             </div>
             <div className="w-full flex flex-col gap-y-2">
-                <label htmlFor="status" className="block font-medium text-gray-700">Estado del paciente <span className="text-red-500">*</span></label>
-                <div className="relative">
-                    <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}
-                        className="block appearance-none w-full bg-gray-100 border border-gray-400 hover:border-gray-500 px-4 py-2 pl-10 pr-8 rounded-lg shadow-sm leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                        <option value="" className="text-gray-400">Seleccione el estado del paciente</option>
-                        <option value="En tratamiento" className="text-gray-700">En tratamiento</option>
-                        <option value="Recuperándose" className="text-gray-700">Recuperándose</option>
-                        <option value="Alta médica" className="text-gray-700">Alta médica</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 self-end">
-                        <svg className="h-5 w-5" viewBox="0 0 20 20">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" clipRule="evenodd" />
-                        </svg>
+                    <label>CURP<span className="text-red-500">*</span></label>
+                    <div className="relative">
+                        <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
+                        <input id="Curp" type="text" value={CURP} onChange={(e) => setCurp(e.target.value)}
+                            className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido materno" />
                     </div>
                 </div>
-            </div>
             <div className="w-full flex flex-col gap-y-2">
                 <label htmlFor="email" className="text-gray-700 font-bold mb-2 block">Correo electrónico</label>
                 <div className="relative">

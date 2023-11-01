@@ -7,7 +7,7 @@ const Navbar = ({ userName }) => {
   return (
     <div className="flex justify-between items-center bg-transparent p-4 backdrop-blur-md z-50">
       <div className="flex items-center">
-        <Clock />
+        <Clock/>
       </div>
       <div className="flex items-center space-x-4">
         <UserMenu userName={userName} />
