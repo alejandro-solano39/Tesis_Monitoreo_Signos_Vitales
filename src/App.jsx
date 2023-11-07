@@ -23,15 +23,16 @@ const App = () => {
           {/* Ruta para el panel de control */}
           <Route path="/Dashboard" element={<Dashboard />} />
           {/* Ruta para la página de contenido de la aplicación */}
-          <Route path="/content" element={<AppContent />} />
+          <Route path="/content/:patientId" element={<AppContent />} />
+          {/* <Route path="/content" element={<AppContent />} /> */}
           {/* Ruta para la lista de pacientes */}
           <Route path="/Pacientes" element={<Pacientes />} />
           {/* Ruta para la creación de usuarios */}
-          <Route path='/CrearUsuario' element={<CrearUsuario/>} />
+          <Route path='/CrearUsuario' element={<CrearUsuario />} />
           {/* Ruta para la página de historial de alertas */}
-          <Route path='/Alertas' element={<Alertas/>} />
+          <Route path='/Alertas' element={<Alertas />} />
           {/* Ruta para el registro de administradores */}
-          <Route path='/RegisterAdmin' element={<Register/>} />
+          <Route path='/RegisterAdmin' element={<Register />} />
         </Route>
       </Routes>
     </>

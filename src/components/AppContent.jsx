@@ -8,16 +8,7 @@ const AppContent = () => {
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard';
   const [alerts, setAlerts] = useState([]);
-  const [bpm, setBpm] = useState(80);
-
-  useEffect(() => {
-    // Actualiza el BPM (pulsos por minuto) de manera aleatoria cada 10 segundos
-    const interval = setInterval(() => {
-      const newBpm = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
-      setBpm(newBpm);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  const [bpm, setBpm] = useState([]);
 
   // Agregar una alerta con un mensaje y tipo específico
   const addAlert = (message, type) => {

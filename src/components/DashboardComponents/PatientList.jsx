@@ -304,7 +304,7 @@ const PatientList = () => {
                   <td>
                     <IconButton className="p-1" color="lightBlue">
                       <Tooltip title="View Details">
-                        <Link to="/content">
+                        <Link to={`/content/${patient.id}`}> {/* Aquí modificamos el Link para incluir el ID */}
                           <InformationCircleIcon className="h-5 w-5 inline" />
                         </Link>
                       </Tooltip>
@@ -357,7 +357,7 @@ const PatientList = () => {
         isModalOpen={isAddModalOpen}
         closeModal={closeAddModal}
         onUpdate={fetchPatients}
-        
+
       />
       {selectedPatient && (
         <EditPatientModal

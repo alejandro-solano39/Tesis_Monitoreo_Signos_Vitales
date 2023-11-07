@@ -10,43 +10,37 @@ const HeartRate = ({ initialBpm = 75 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chartData, setChartData] = useState([]);
 
+  // Simulación del cambio del ritmo cardíaco
   useEffect(() => {
-    const simulateHeartRate = setInterval(() => {
-      const randomBpm = Math.floor(Math.random() * (100 - 60) + 60);
-      setBpm(randomBpm);
+    const interval = setInterval(() => {
+      const newBpm = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
+      setBpm(newBpm);
     }, 5000);
 
-    return () => clearInterval(simulateHeartRate);
+    return () => clearInterval(interval);
   }, []);
 
+  // Actualización del gráfico con el nuevo valor de BPM
   useEffect(() => {
     setChartData(prevData => [...prevData.slice(-11), { time: new Date().toLocaleTimeString(), value: bpm }]);
   }, [bpm]);
 
+  // Notificaciones de cambio de BPM
   useEffect(() => {
     if (bpmRef.current !== bpm) {
       bpmRef.current = bpm;
       if (bpm < 60 || bpm > 100) {
         setNotification('danger');
+        toast.error('El ritmo cardíaco del paciente es anormalmente alto o bajo.');
       } else if (bpm <= 70 || bpm >= 90) {
         setNotification('warning');
+        toast.warning('El ritmo cardíaco del paciente está ligeramente fuera del rango normal.');
       } else {
         setNotification('success');
-      }
-    }
-  }, [bpm]);
-
-  useEffect(() => {
-    if (notification) {
-      if (notification === 'danger') {
-        toast.error('El ritmo cardíaco del paciente es anormalmente alto o bajo.');
-      } else if (notification === 'warning') {
-        toast.warning('El ritmo cardíaco del paciente está ligeramente fuera del rango normal.');
-      } else if (notification === 'success') {
         toast.success('El ritmo cardíaco del paciente está dentro del rango normal.');
       }
     }
-  }, [notification]);
+  }, [bpm]);
 
   let color = '';
   let colorValue = '';

@@ -1,7 +1,6 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const connection = require('./db');
 const cors = require('cors');
+const connection = require('./db');
 
 const app = express();
 app.use(cors());
@@ -59,7 +58,6 @@ app.patch('/api/patients/:id', (req, res) => {
   );
 });
 
-
 //Codigo y conexion para inciar sesion
 
 app.post('/api/login', (req, res) => {
@@ -108,8 +106,6 @@ app.get('/api/getEmail', (req, res) => {
     }
   );
 });
-
-
 
 
 //Conexion de la tabla del home
