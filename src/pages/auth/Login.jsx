@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaMedkit, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 
@@ -23,10 +23,22 @@ function Login() {
                 });
 
                 if (response.status === 200) {
-                    navigate('/Dashboard');
+                    // Suponiendo que la respuesta del servidor incluye el nombre en 'response.data.admin.name'
+                    sessionStorage.setItem('userName', response.data.admin.name); // Almacena el nombre del usuario
+                    navigate('/Dashboard'); // Redirige al usuario al dashboard
+                    // En tu componente de inicio de sesión, después de un inicio de sesión exitoso
+                    sessionStorage.setItem('userFirstName', response.data.admin.nombre); // Ajusta esto según la respuesta real de tu backend
+                    sessionStorage.setItem('userLastName', response.data.admin.apellido); // Ajusta esto según la respuesta real de tu backend
+
                 }
             } catch (error) {
-                setErrorMessage('Error al iniciar sesión. Por favor, verifique sus credenciales');
+                if (error.response) {
+                    // Si hay respuesta del servidor con un mensaje de error específico
+                    setErrorMessage(error.response.data.message);
+                } else {
+                    // Para otros errores de red o desconocidos
+                    setErrorMessage('Error al iniciar sesión. Por favor, verifique su conexión y vuelva a intentarlo');
+                }
             }
         }
     };

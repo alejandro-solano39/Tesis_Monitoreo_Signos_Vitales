@@ -64,7 +64,7 @@ app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
   connection.query(
-    'SELECT * FROM patients WHERE email = ?',
+    'SELECT * FROM administration WHERE email = ?',
     [email],
     (error, results) => {
       if (error) {
@@ -73,17 +73,26 @@ app.post('/api/login', (req, res) => {
         if (results.length === 0) {
           res.status(404).json({ message: 'Email no encontrado' });
         } else {
-          const patient = results[0];
-          if (patient.password !== password) {
+          const admin = results[0];
+          // Aquí debes comparar la contraseña después de aplicar el mismo hash que usaste al guardarla
+          if (hash(password) !== admin.contraseña) {
             res.status(401).json({ message: 'Contraseña incorrecta' });
           } else {
-            res.status(200).json({ message: 'Inicio de sesión exitoso', patient });
+            // Envía el nombre y apellido como parte de la respuesta
+            res.status(200).json({ 
+              message: 'Inicio de sesión exitoso', 
+              admin: {
+                name: admin.nombre,
+                lastName: admin.apellido
+              }
+            });
           }
         }
       }
     }
   );
 });
+
 
 app.get('/api/getEmail', (req, res) => {
   const userId = req.userId;
