@@ -33,9 +33,6 @@ const Slider = ({ setActiveComponent }) => {
               <p className="text-gray-800 text-xs">Desarrollo de aplicaciones</p>
             </div>
           </div>
-          <form>
-            <input type="text" className="w-full p-2 rounded-lg outline-none bg-gray-200" placeholder="Buscador" />
-          </form>
           <ul className="mt-4 mb-8">
             <li>
               <Link to="/Dashboard" className="flex items-center gap-4 p-2 hover:bg-gray-200 transition-colors rounded-lg">
@@ -47,12 +44,6 @@ const Slider = ({ setActiveComponent }) => {
               <Link to="/Pacientes" className="flex items-center gap-4 p-2 hover:bg-gray-200 transition-colors rounded-lg">
                 <FaUser className="w-5 h-5" />
                 <span>Pacientes</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/CrearUsuario" className="flex items-center gap-4 p-2 hover:bg-gray-200 transition-colors rounded-lg">
-                <FaUser className="w-5 h-5" />
-                <span>Agregar Pacientes</span>
               </Link>
             </li>
             <li>

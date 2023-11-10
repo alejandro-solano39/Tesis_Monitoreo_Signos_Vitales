@@ -1,20 +1,18 @@
 import React from 'react';
 
-// Asumiendo que recibes 'firstName' y 'lastName' como props
 const DoctorWelcomeCard = ({ firstName, lastName }) => {
-  // Crea iniciales con el primer nombre y el apellido
   const initials = `${firstName ? firstName[0] : 'N'}${lastName ? lastName[0] : 'N'}`;
 
   return (
-    <div className="bg-white rounded-lg p-4 flex flex-col md:flex-row justify-center items-center">
-      <span className="flex items-center justify-center w-20 h-20 bg-slate-200 text-slate-600 border border-slate-300 uppercase font-semibold text-xl mx-2 md:mx-4 rounded-full">
+    <div className="bg-white rounded-lg p-6 flex flex-col md:flex-row items-center space-x-4">
+      <span className="flex items-center justify-center w-24 h-24 bg-blue-100 text-blue-800 border border-blue-300 uppercase font-bold text-2xl rounded-full">
         {initials}
       </span>
-      <div className="text-center md:text-left">
-        <h2 className="text-lg font-medium text-gray-800 mb-1">
-          ¡Bienvenido, Dr/a. {lastName}! {/* Ahora muestra correctamente el apellido */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800">
+          ¡Bienvenido, Dr/a. {lastName}!
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-gray-600">
           Le deseamos un excelente día en su práctica médica.
         </p>
       </div>
@@ -23,4 +21,3 @@ const DoctorWelcomeCard = ({ firstName, lastName }) => {
 };
 
 export default DoctorWelcomeCard;
-
