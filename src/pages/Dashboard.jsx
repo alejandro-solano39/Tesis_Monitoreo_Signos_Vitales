@@ -9,7 +9,7 @@ const Dashboard = () => {
   const lastName = sessionStorage.getItem('userLastName');
 
 
-  const handleAddPatient = (patient) => {
+  const handleAddPatient = (newPatientData) => {
     setPatients([...patients, patient]);
   };
 
@@ -39,7 +39,8 @@ const Dashboard = () => {
             element={
               <div className="ml-80">
                 <div className="border border-gray-300 shadow-lg bg-white p-6 rounded-xl my-6 mx-6">
-                  <PatientList patients={patients} firstName={firstName} lastName={lastName} />
+                  <PatientList patients={patients} onSubmit={handleAddPatient} firstName={firstName} lastName={lastName} />
+
                 </div>
               </div>
             }

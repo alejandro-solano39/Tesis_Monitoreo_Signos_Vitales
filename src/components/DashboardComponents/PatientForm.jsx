@@ -8,8 +8,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import TextField from '@mui/material/TextField';
 import dayjs from 'dayjs';
 
+const PatientForm = ({ patientId, onSubmit }) => {
+    const [formData, setFormData] = useState({
 
-const PatientForm = () => {
+    });
     const [name, setName] = useState('');
     const [paternalLastName, setPaternalLastName] = useState('');
     const [maternalLastName, setMaternalLastName] = useState('');
@@ -17,29 +19,26 @@ const PatientForm = () => {
     const [age, setAge] = useState('');
     const [gender, setGender] = useState('');
     const [CURP, setCurp] = useState('');
-   
-const handleDateChange = (date) => {
-    setBirthdate(date);
-    const now = dayjs();
-    const birthDate = dayjs(date);
-    const calculatedAge = now.diff(birthDate, 'year');
-    setAge(calculatedAge);
-};
 
-    const submitPatient = async (patientData) => {
-        try {
-            const response = await axios.post('http://localhost:3001/api/patients', patientData);
-            console.log('Paciente creado con éxito:', response.data);
-            toast.success("El paciente ha sido agregado correctamente", {
-                position: toast.POSITION.TOP_RIGHT,
+    const handleDateChange = (date) => {
+        setBirthdate(date);
+        const now = dayjs();
+        const birthDate = dayjs(date);
 
-            });
-        } catch (error) {
-            console.error('Error al crear paciente:', error);
-            toast.error("Error al agregar paciente", {
-                position: toast.POSITION.TOP_RIGHT,
-            });
+        const calculatedAgeYears = now.diff(birthDate, 'year');
+        const calculatedAgeMonths = now.diff(birthDate, 'month');
+        const calculatedAgeDays = now.diff(birthDate, 'day');
+
+        let calculatedAge = '';
+        if (calculatedAgeYears > 0) {
+            calculatedAge = `${calculatedAgeYears} años`;
+        } else if (calculatedAgeMonths > 0) {
+            calculatedAge = `${calculatedAgeMonths} meses`;
+        } else {
+            calculatedAge = `${calculatedAgeDays} días`;
         }
+
+        setAge(calculatedAge);
     };
 
     const validateForm = () => {
@@ -65,8 +64,9 @@ const handleDateChange = (date) => {
             });
             isValid = false;
         }
-        if (!birthdate){
-            toast.error('Por favor, completa rl campo fecha de nacimiento', {
+
+        if (!birthdate) {
+            toast.error('Por favor, completa el campo fecha de nacimiento', {
                 position: toast.POSITION.TOP_RIGHT,
             });
             isValid = false;
@@ -95,20 +95,58 @@ const handleDateChange = (date) => {
 
         return isValid;
     };
+    
 
-    const handleSubmit = (e) => {
+                        
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
-        submitPatient({ name, paternalLastName, maternalLastName, age, birthdate, gender, CURP });
-        setName('');
-        setPaternalLastName('');
-        setMaternalLastName('');
-        setBirthdate('');
-        setAge('');
-        setGender('');
-        setCurp('');
-    };
-
+        if (validateForm()) {
+            try {
+                const patientData = {
+                    name, 
+                    paternalLastName, 
+                    maternalLastName, 
+                    birthdate, 
+                    age, 
+                    gender, 
+                    CURP
+                };
+                const response = await axios.post('http://localhost:3001/api/patients', patientData);
+    
+                // Comprobar si el estado de la respuesta es 201 (Creado)
+                if (response.status === 201) {
+                    if (typeof onSubmit === 'function') {
+                    onSubmit(response.data); // Actualizar la lista de pacientes
+                }
+                    toast.success("El paciente ha sido agregado correctamente", {
+                        position: toast.POSITION.TOP_RIGHT,
+                    
+                    });
+    
+                    // Restablecer el formulario
+                    setName('');
+                    setPaternalLastName('');
+                    setMaternalLastName('');
+                    setBirthdate('');
+                    setAge('');
+                    setGender('');
+                    setCurp('');
+                } else {
+                    // Si el estado no es 201, se considera un error
+                    toast.error("Error al agregar paciente: Respuesta inesperada del servidor", {
+                        position: toast.POSITION.TOP_RIGHT,
+                    });
+                }
+            } catch (error) {
+                // Manejar errores en la solicitud
+                console.error('Error al agregar paciente:', error);
+                toast.error(`Error al agregar paciente: ${error.message || 'Error desconocido'}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+            }
+        }
+};
+    
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <h2 className="text-xl font-bold mb-2">Formulario</h2>
@@ -139,24 +177,24 @@ const handleDateChange = (date) => {
             </div>
             <div className="w-full flex flex-col gap-y-2">
                 <div>
-                <label>Fecha de Nacimiento <span className="text-red-500">*</span></label>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                        label="Fecha de Nacimiento"
-                        value={birthdate}
-                        onChange={handleDateChange}
-                        renderInput={(params) => <TextField {...params} />}
-                    />
-                </LocalizationProvider>
-                <div className="w-full flex flex-col gap-y-2">
-                <label>Edad Calculada</label>
-                <input
-                    type="text"
-                    value={age}
-                    className="w-full bg-gray-100 py-2 px-4 rounded-lg outline-none"
-                    disabled
-                />
-            </div>
+                    <label>Fecha de Nacimiento <span className="text-red-500">*</span></label>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Fecha de Nacimiento"
+                            value={birthdate}
+                            onChange={handleDateChange}
+                            renderInput={(params) => <TextField {...params} />}
+                        />
+                    </LocalizationProvider>
+                    <div className="w-full flex flex-col gap-y-2">
+                        <label>Edad Calculada</label>
+                        <input
+                            type="text"
+                            value={age}
+                            className="w-full bg-gray-100 py-2 px-4 rounded-lg outline-none"
+                            disabled
+                        />
+                    </div>
                 </div>
                 <div>
                     <div className="w-full flex flex-col gap-y-2">
@@ -192,13 +230,13 @@ const handleDateChange = (date) => {
                 </div>
             </div>
             <div className="w-full flex flex-col gap-y-2">
-                    <label>CURP<span className="text-red-500">*</span></label>
-                    <div className="relative">
-                        <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                        <input id="Curp" type="text" value={CURP} onChange={(e) => setCurp(e.target.value)}
-                            className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido materno" />
-                    </div>
+                <label>CURP<span className="text-red-500">*</span></label>
+                <div className="relative">
+                    <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
+                    <input id="Curp" type="text" value={CURP} onChange={(e) => setCurp(e.target.value)}
+                        className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido materno" />
                 </div>
+            </div>
             <div className="px-6 py-4 -10 flex justify-end space-x-2">
                 <button type="submit" className="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-900 transition-colors">
                     Guardar

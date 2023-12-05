@@ -10,6 +10,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
+
 // Configuración del cliente MQTT
 const mqttClient = mqtt.connect('mqtt://test.mosquitto.org');
 let lastTemperature = 0;
@@ -69,15 +72,29 @@ app.get('/api/oxygenLevel', (req, res) => {
 
 // Endpoint para obtener el historial de alertas
 app.get('/api/alerts_history', (req, res) => {
-  console.log('GET request to /api/Signos vitales received');
-  connection.query('SELECT * FROM vital_signs', (error, results) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 20;
+  const startIndex = (page - 1) * pageSize;
+
+  const query = `
+  SELECT vs.*, 
+         p.name, 
+         p.paternalLastName, 
+         p.maternalLastName
+  FROM vital_signs AS vs
+  JOIN patients AS p ON vs.patient_id = p.id
+  LIMIT ?, ?`;
+
+  connection.query(query, [startIndex, pageSize], (error, results) => {
     if (error) {
+      console.error('Error en la consulta:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
     } else {
       res.status(200).json(results);
     }
   });
 });
+
   
 
 // // Configuración del servidor de streaming para la cámara USB
@@ -196,6 +213,26 @@ app.post('/api/patients', (req, res) => {
   );
 });
 
+
+// Actualizar un paciente
+app.patch('/api/patients/:id', (req, res) => {
+  const { id } = req.params;
+  const patientData = req.body;
+
+  const { name, paternalLastName, maternalLastName, birthdate, gender, CURP } = req.body;
+
+  let query = 'UPDATE patients SET name = ?, paternalLastName = ?, maternalLastName = ?, birthdate = ?, gender = ?, CURP = ? WHERE id = ?';
+
+  connection.query(query, [name, paternalLastName, maternalLastName, birthdate, gender, CURP, id], (error, results) => {
+    if (error) {
+      console.error('Error al actualizar el paciente:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    } else {
+      res.status(200).json({ message: 'Paciente actualizado exitosamente', id });
+    }
+  });
+});
+
 // Obtener los detalles de un paciente específico por ID
 app.get('/api/patients/:id', (req, res) => {
   const { id } = req.params;
@@ -210,6 +247,20 @@ app.get('/api/patients/:id', (req, res) => {
         res.status(200).json(results[0]);
       }
     }
+  });
+});
+
+app.patch('/api/patients/:id/status', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // Asumiendo que 'status' es 'Active' o 'Inactive'
+
+  const query = 'UPDATE patients SET status = ? WHERE id = ?';
+  connection.query(query, [status, id], (error, results) => {
+      if (error) {
+          console.error('Error al actualizar el estado del paciente:', error);
+          return res.status(500).json({ message: 'Error interno del servidor' });
+      }
+      res.status(200).json({ message: 'Estado del paciente actualizado correctamente' });
   });
 });
 

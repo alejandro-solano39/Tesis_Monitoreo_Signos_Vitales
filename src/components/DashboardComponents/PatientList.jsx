@@ -6,11 +6,12 @@ import { Chip, Card, CardHeader, Typography, Button, CardBody, IconButton, Toolt
 import ConfirmDeleteModal from '../modal/ConfirmDeleteModal';
 import AddPatientModal from '../modal/AddPatientModal';
 import EditPatientModal from '../modal/EditPatientModal';
+import { CheckIcon, XIcon } from '@heroicons/react/outline';
 import { MdAddCircle } from 'react-icons/md'; // Asumiendo que usas React Icons
 import { FiPlus } from 'react-icons/fi';
 
 
-const TABLE_HEAD = ["Pacientes", "Edad", "Genero", "Estado", "Signos Vitales", "Acciones"];
+const TABLE_HEAD = ["Pacientes", "Edad", "Genero", "Estado", "Registros", "Acciones"];
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
@@ -63,10 +64,15 @@ const PatientList = () => {
   };
 
   useEffect(() => {
+
     fetchPatients();
     fetchEnabledPatients();
     fetchDisabledPatients();
   }, []);
+
+  useEffect(() => {
+    fetchPatients();  // Esto se llama cuando el componente se monta y cuando fetchPatients cambia
+  }, [fetchPatients]);
 
   const handleOpenDeleteModal = (patientId) => {
     setPatientToDelete(patientId);
@@ -102,6 +108,23 @@ const PatientList = () => {
       setPatientToDelete(null);
     }
   };
+
+  // Filtrar pacientes basado en la pestaña activa
+  const getFilteredPatients = () => {
+    switch (activeTab) {
+      case 'enabled':
+        return patients.filter(patient => patient.status === 'Active');
+      case 'disabled':
+        return patients.filter(patient => patient.status === 'Inactive');
+      default:
+        return patients;
+    }
+  };
+
+  const filteredPatients = getFilteredPatients().filter(patient =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   const disablePatient = async (patientId) => {
     try {
@@ -164,6 +187,10 @@ const PatientList = () => {
   };
 
   const handleUpdatePatient = async (updatedPatient) => {
+    if (!updatedPatient.id) {
+      console.error('Error: ID del paciente no definido');
+      return;
+    }
     try {
       const response = await fetch(`http://localhost:3001/api/patients/${updatedPatient.id}`, {
         method: 'PATCH',
@@ -195,11 +222,44 @@ const PatientList = () => {
     }
   };
 
-  // Filtered patients based on search term
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
 
-  );
+  // // Filtered patients based on search term
+  // const filteredPatients = patients.filter(patient =>
+  //   patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+
+  // );
+
+  const changePatientStatus = async (patientId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/patients/${patientId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        const updatedPatients = patients.map(patient =>
+          patient.id === patientId ? { ...patient, status: newStatus } : patient
+        );
+        setPatients(updatedPatients);
+        toast.success(`Paciente ${newStatus === 'Active' ? 'habilitado' : 'deshabilitado'} correctamente`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      } else {
+        toast.error('Error al cambiar el estado del paciente', {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estado del paciente:', error);
+      toast.error('Error al cambiar el estado del paciente', {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+    }
+  };
+
 
   // Filter patients based on active tab
   return (
@@ -237,6 +297,8 @@ const PatientList = () => {
       </CardHeader>
       <CardBody className="overflow-scroll px-0">
         <div className="flex justify-between mb-4 space-x-2">
+
+
           <Button
             onClick={() => setActiveTab('all')}
             size="sm"
@@ -297,24 +359,52 @@ const PatientList = () => {
                   </td>
                   <td>{patient.age}</td>
                   <td>{patient.gender}</td>
-                  <td>{patient.condition}</td>
+                  <td className="text-center">
+                    {patient.status === 'Active' ? (
+                      <span className="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-500 text-white">
+                        Activo
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-500 text-white">
+                        Inactivo
+                      </span>
+                    )}
+                  </td>
                   <td>
-                    <IconButton className="p-1" color="lightBlue">
-                      <Tooltip title="View Details">
-                        <Link to={`/content/${patient.id}`}> {/* Aquí modificamos el Link para incluir el ID */}
+                    <Link to={`/content/${patient.id}`}>
+                      <IconButton className="p-1 cursor-pointer" color="lightBlue">
+                        <Tooltip title="View Details">
                           <InformationCircleIcon className="h-5 w-5 inline" />
-                        </Link>
-                      </Tooltip>
-                    </IconButton>
+                        </Tooltip>
+                      </IconButton>
+                    </Link>
                   </td>
                   <td>
                     <div className="flex flex-row items-center justify-center gap-2">
                       <IconButton color="blue" size="small" onClick={() => openEditModal(patient)}>
                         <PencilIcon strokeWidth={2} className="h-4 w-4" />
                       </IconButton>
-                      <IconButton color="blue" size="small">
-                        <EyeIcon strokeWidth={2} className="h-4 w-4" />
-                      </IconButton>
+                      {patient.status === 'Active' ? (
+                        <Tooltip title="Deshabilitar">
+                          <IconButton
+                            color="red"
+                            size="small"
+                            onClick={() => changePatientStatus(patient.id, 'Inactive')}
+                          >
+                            <XIcon className="h-4 w-4 text-white" />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Habilitar">
+                          <IconButton
+                            color="green"
+                            size="small"
+                            onClick={() => changePatientStatus(patient.id, 'Active')}
+                          >
+                            <CheckIcon className="h-4 w-4 text-white" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <IconButton
                         color="red"
                         size="small"
