@@ -3,6 +3,11 @@ const cors = require('cors');
 const mqtt = require('mqtt');
 const connection = require('./db');
 const crypto = require('crypto');
+
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 8080 });
+
 const { Telegraf } = require('telegraf');
 const { spawn } = require('child_process');  // Añadir esto para ffmpeg
 const bot = new Telegraf('6464580630:AAEpmVad5_7CjXmr9nn_6B3rZbgQQvR0qJc'); // Reemplaza con el token de tu bot
@@ -115,35 +120,36 @@ app.get('/api/alerts_history', (req, res) => {
   
 
 // // Configuración del servidor de streaming para la cámara USB
-// app.get('/camera-stream', (req, res) => {
-//   res.connection.setTimeout(0);
-//   const ffmpegPath = 'C:\\webcam\\bin\\ffmpeg.exe'; // Ajusta esto a la ruta correcta de ffmpeg
-// const ffmpeg = spawn(ffmpegPath, [
-//     '-f', 'dshow',
-//     '-i', 'video=Camo', // Asegúrate de que este es el nombre correcto de tu cámara
-//     '-c:v', 'copy', // Sin transcodificación
-//     '-f', 'mjpeg', // Formato MJPEG para transmisión en tiempo real
-//     '-'
-//   ]);
 
-//   res.writeHead(200, {
-//     'Content-Type': 'multipart/x-mixed-replace; boundary=ffmpeg'
-//   });
+wss.on('connection', function connection(ws) {
+    console.log('Cliente conectado');
+    const ffmpeg = spawn('ffmpeg', [
+        '-f', 'dshow',
+        '-i', 'video=Camo', // Reemplaza con el nombre de tu cámara
+        '-f', 'mpegts',
+        '-codec:v', 'mpeg1video',
+        '-s', '640x480',
+        '-b:v', '800k',
+        '-bf', '0',
+        '-'
+    ]);
 
-//   ffmpeg.stdout.on('data', (data) => {
-//     res.write(`--ffmpeg\r\nContent-Type: image/jpeg\r\n\r\n`);
-//     res.write(data);
-//     res.write('\r\n');
-//   });
+    ffmpeg.stdout.on('data', (data) => {
+        ws.send(data);
+    });
 
-//   ffmpeg.stderr.on('data', (data) => {
-//     console.error('ffmpeg stderr:', data.toString());
-//   });
+    ffmpeg.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+    });
 
-//   req.on('close', () => {
-//     ffmpeg.kill('SIGINT');
-//   });
-// });
+    ffmpeg.on('close', (code) => {
+        console.log(`Proceso ffmpeg terminado con código ${code}`);
+    });
+
+    ws.on('close', () => {
+        ffmpeg.kill('SIGINT');
+    });
+});
 
 
 // Suponiendo que tienes una tabla 'patients' con 'id', 'name', 'paternalLastName' y 'maternalLastName'

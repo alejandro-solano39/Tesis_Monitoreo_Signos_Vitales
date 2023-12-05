@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const CameraFeed = () => {
-  const streamUrl = 'http://localhost:3001/camera-stream';  // Asegúrate de que esta URL apunte a tu servidor Node.js
+const CameraComponent = ({ isCameraOn, videoRef }) => {
+    useEffect(() => {
+        const constraints = { video: true };
 
-  return (
-    <div>
-      <h2>Camera Feed</h2>
-      <video src={streamUrl} controls autoPlay muted playsInline></video>
-    </div>
-  );
+        async function enableStream() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (error) {
+                console.error("Error accessing media devices.", error);
+            }
+        }
+
+        async function disableStream() {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const tracks = videoRef.current.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                videoRef.current.srcObject = null;
+            }
+        }
+
+        if (isCameraOn) {
+            enableStream();
+        } else {
+            disableStream();
+        }
+
+        return () => {
+            disableStream();
+        };
+    }, [isCameraOn, videoRef]);
+
+    return (
+        <div className="w-full h-full rounded-full overflow-hidden">
+            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+        </div>
+    );
 };
 
-export default CameraFeed;
+export default CameraComponent;
