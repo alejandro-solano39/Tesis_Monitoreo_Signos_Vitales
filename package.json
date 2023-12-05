@@ -51,6 +51,7 @@
     "recharts": "^2.5.0",
     "socket.io": "^4.6.1",
     "styled-components": "^5.3.9",
+    "telegraf": "^4.15.3",
     "ws": "^8.14.2"
   },
   "devDependencies": {

@@ -3,7 +3,20 @@ const cors = require('cors');
 const mqtt = require('mqtt');
 const connection = require('./db');
 const crypto = require('crypto');
+const { Telegraf } = require('telegraf');
 const { spawn } = require('child_process');  // Añadir esto para ffmpeg
+const bot = new Telegraf('6464580630:AAEpmVad5_7CjXmr9nn_6B3rZbgQQvR0qJc'); // Reemplaza con el token de tu bot
+
+bot.start((ctx) => {
+  console.log(ctx);
+  ctx.reply('¡Hola!');
+});
+
+bot.command(['mycommand', 'Mycommand', 'MYCOMMAND'], (ctx) => {
+  ctx.reply('¡Comando personalizado!');
+});
+
+bot.launch();
 
 const app = express();
 app.use(cors());
@@ -11,9 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-
-
-// Configuración del cliente MQTT
+// Configuración del cliente MQTT + api telgram
 const mqttClient = mqtt.connect('mqtt://test.mosquitto.org');
 let lastTemperature = 0;
 let lastHeartRate = 75;
@@ -21,21 +32,28 @@ let lastSystolic = 120;
 let lastDiastolic = 80;
 let lastOxygenLevel = 95;  // Valor inicial para el nivel de oxígeno
 
-
 mqttClient.on('connect', () => {
   console.log('Conectado a MQTT Broker');
   mqttClient.subscribe('temperatura/photon');
   mqttClient.subscribe('ritmoCardiaco/photon');
   mqttClient.subscribe('presionArterial/photon');
   mqttClient.subscribe('nivelOxigeno/photon'); // Suscripción al tópico del nivel de oxígeno
-
-
 });
 
 mqttClient.on('message', (topic, message) => {
   if (topic === 'temperatura/photon') {
     lastTemperature = parseFloat(message.toString());
     console.log(`Temperatura recibida: ${lastTemperature}`);
+
+    // Verificar si la temperatura es mayor a 38°C
+    if (lastTemperature > 38) {
+      try {
+        // Enviar alerta al bot de Telegram
+        bot.telegram.sendMessage('5696187051', '¡Alerta! Temperatura anormal');
+      } catch (error) {
+        console.error('Error al enviar la alerta a Telegram:', error.message);
+      }
+    } 
   } else if (topic === 'ritmoCardiaco/photon') {
     lastHeartRate = parseInt(message.toString(), 10);
     console.log(`Ritmo cardíaco recibido: ${lastHeartRate}`);
@@ -48,7 +66,6 @@ mqttClient.on('message', (topic, message) => {
     lastOxygenLevel = parseFloat(message.toString());
     console.log(`Nivel de oxígeno recibido: ${lastOxygenLevel}`);
   }
-
 });
 
 // Rutas API
@@ -127,6 +144,29 @@ app.get('/api/alerts_history', (req, res) => {
 //     ffmpeg.kill('SIGINT');
 //   });
 // });
+
+
+// Suponiendo que tienes una tabla 'patients' con 'id', 'name', 'paternalLastName' y 'maternalLastName'
+app.get('/api/latest_alerts', async (req, res) => {
+  try {
+    const query = `
+      SELECT vs.*, p.name, p.paternalLastName, p.maternalLastName 
+      FROM vital_signs AS vs
+      JOIN patients AS p ON vs.patient_id = p.id
+      ORDER BY vs.fecha_hora DESC 
+      LIMIT 4`;
+
+    connection.query(query, (error, results) => {
+      if (error) {
+        throw error;
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error al obtener alertas:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
 
 
 
