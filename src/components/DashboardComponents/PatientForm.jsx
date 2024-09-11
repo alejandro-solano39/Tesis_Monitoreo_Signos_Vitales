@@ -1,250 +1,190 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { RiUserLine, RiMailLine, RiLockPasswordLine } from 'react-icons/ri';
-import { BiMaleSign, BiFemaleSign } from 'react-icons/bi';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import TextField from '@mui/material/TextField';
-import dayjs from 'dayjs';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import TextField from "@mui/material/TextField";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import { Grid, InputLabel, FormControl, Select, MenuItem } from "@mui/material";
 
-const PatientForm = ({ patientId, onSubmit }) => {
-    const [formData, setFormData] = useState({
+const PatientForm = ({ patientDetails, onUpdate }) => {
+  const [patient, setPatient] = useState({
+    name: "",
+    paternalLastName: "",
+    maternalLastName: "",
+    birthdate: null,
+    age: "",
+    gender: "",
+    CURP: "",
+  });
 
-    });
-    const [name, setName] = useState('');
-    const [paternalLastName, setPaternalLastName] = useState('');
-    const [maternalLastName, setMaternalLastName] = useState('');
-    const [birthdate, setBirthdate] = useState('');
-    const [age, setAge] = useState('');
-    const [gender, setGender] = useState('');
-    const [CURP, setCurp] = useState('');
+  const navigate = useNavigate();
+  const isEditMode = !!patientDetails;
+  const formTitle = isEditMode ? "Editar Paciente" : "Nuevo Paciente";
 
-    const handleDateChange = (date) => {
-        setBirthdate(date);
-        const now = dayjs();
-        const birthDate = dayjs(date);
+  useEffect(() => {
+    if (patientDetails) {
+      setPatient({
+        ...patientDetails,
+        birthdate: patientDetails.birthdate ? dayjs(patientDetails.birthdate) : null,
+        age: calculateAge(patientDetails.birthdate),
+      });
+    }
+  }, [patientDetails]);
 
-        const calculatedAgeYears = now.diff(birthDate, 'year');
-        const calculatedAgeMonths = now.diff(birthDate, 'month');
-        const calculatedAgeDays = now.diff(birthDate, 'day');
+  const calculateAge = (birthdate) => {
+    if (!birthdate) return "";
+    const today = dayjs();
+    const birthDate = dayjs(birthdate);
+    const years = today.diff(birthDate, "year");
+    return years;
+  };
 
-        let calculatedAge = '';
-        if (calculatedAgeYears > 0) {
-            calculatedAge = `${calculatedAgeYears} años`;
-        } else if (calculatedAgeMonths > 0) {
-            calculatedAge = `${calculatedAgeMonths} meses`;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPatient(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleDateChange = (newDate) => {
+    setPatient(prev => ({
+      ...prev,
+      birthdate: newDate,
+      age: calculateAge(newDate),
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      const method = isEditMode ? "patch" : "post";
+      const url = isEditMode ? `http://localhost:3001/api/patients/${patientDetails.id}` : "http://localhost:3001/api/patients";
+
+      try {
+        const response = await axios({ method, url, data: patient });
+        if (response.status === 200 || response.status === 201) {
+          toast.success(`Paciente ${isEditMode ? "actualizado" : "agregado"} correctamente`, { position: toast.POSITION.TOP_RIGHT });
+          onUpdate && onUpdate(patient);
+          navigate("/Pacientes");
         } else {
-            calculatedAge = `${calculatedAgeDays} días`;
+          toast.error(`Error al ${isEditMode ? "actualizar" : "agregar"} paciente`, { position: toast.POSITION.TOP_RIGHT });
         }
+      } catch (error) {
+        toast.error(`Error al ${isEditMode ? "actualizar" : "agregar"} paciente: ${error.message}`, { position: toast.POSITION.TOP_RIGHT });
+      }
+    }
+  };
 
-        setAge(calculatedAge);
-    };
-
-    const validateForm = () => {
-        let isValid = true;
-
-        if (!name) {
-            toast.error('Por favor, completa el campo Nombre(s)', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!paternalLastName) {
-            toast.error('Por favor, completa el campo Apellido paterno', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!maternalLastName) {
-            toast.error('Por favor, completa el campo Apellido materno', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!birthdate) {
-            toast.error('Por favor, completa el campo fecha de nacimiento', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!age) {
-            toast.error('Por favor, completa el campo Edad', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!gender) {
-            toast.error('Por favor, selecciona un género', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        if (!CURP) {
-            toast.error('Por favor, agrega la CURP del paciente', {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            isValid = false;
-        }
-
-        return isValid;
-    };
-    
-
-                        
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (validateForm()) {
-            try {
-                const patientData = {
-                    name, 
-                    paternalLastName, 
-                    maternalLastName, 
-                    birthdate, 
-                    age, 
-                    gender, 
-                    CURP
-                };
-                const response = await axios.post('http://localhost:3001/api/patients', patientData);
-    
-                // Comprobar si el estado de la respuesta es 201 (Creado)
-                if (response.status === 201) {
-                    if (typeof onSubmit === 'function') {
-                    onSubmit(response.data); // Actualizar la lista de pacientes
-                }
-                    toast.success("El paciente ha sido agregado correctamente", {
-                        position: toast.POSITION.TOP_RIGHT,
-                    
-                    });
-    
-                    // Restablecer el formulario
-                    setName('');
-                    setPaternalLastName('');
-                    setMaternalLastName('');
-                    setBirthdate('');
-                    setAge('');
-                    setGender('');
-                    setCurp('');
-                } else {
-                    // Si el estado no es 201, se considera un error
-                    toast.error("Error al agregar paciente: Respuesta inesperada del servidor", {
-                        position: toast.POSITION.TOP_RIGHT,
-                    });
-                }
-            } catch (error) {
-                // Manejar errores en la solicitud
-                console.error('Error al agregar paciente:', error);
-                toast.error(`Error al agregar paciente: ${error.message || 'Error desconocido'}`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                });
-            }
-        }
-};
-    
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <h2 className="text-xl font-bold mb-2">Formulario</h2>
-            <div className="px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-center gap-8">
-                <div className="w-full flex flex-col gap-y-2">
-                    <label>Nombre(s) <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                        <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                        <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu nombre" />
-                    </div>
-                </div>
-                <div className="w-full flex flex-col gap-y-2">
-                    <label>Apellido paterno <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                        <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                        <input id="paternal-last-name" type="text" value={paternalLastName} onChange={(e) => setPaternalLastName(e.target.value)}
-                            className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido paterno" />
-                    </div>
-                </div>
-                <div className="w-full flex flex-col gap-y-2">
-                    <label> Apellido materno <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                        <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                        <input id="maternal-last-name" type="text" value={maternalLastName} onChange={(e) => setMaternalLastName(e.target.value)}
-                            className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido materno" />
-                    </div>
-                </div>
-            </div>
-            <div className="w-full flex flex-col gap-y-2">
-                <div>
-                    <label>Fecha de Nacimiento <span className="text-red-500">*</span></label>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                            label="Fecha de Nacimiento"
-                            value={birthdate}
-                            onChange={handleDateChange}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
-                    </LocalizationProvider>
-                    <div className="w-full flex flex-col gap-y-2">
-                        <label>Edad Calculada</label>
-                        <input
-                            type="text"
-                            value={age}
-                            className="w-full bg-gray-100 py-2 px-4 rounded-lg outline-none"
-                            disabled
-                        />
-                    </div>
-                </div>
-                <div>
-                    <div className="w-full flex flex-col gap-y-2">
-                        <label htmlFor="gender" className="block font-medium text-gray-700">Género <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                            {gender === "Male" ? (
-                                <BiMaleSign className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                            ) : gender === "Female" ? (
-                                <BiFemaleSign className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                            ) : (
-                                <div className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4">
-                                    <svg className="fill-current h-4 w-4" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z"
-                                            clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                            )}
-                            <select id="gender" value={gender} onChange={(e) => setGender(e.target.value)}
-                                className="block appearance-none w-full bg-gray-100 border border-gray-400 hover:border-gray-500 px-4 py-2 pl-10 pr-8 rounded-lg shadow-sm leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                <option value="" className="text-gray-400">Seleccione un género</option>
-                                <option value="Male" className="text-gray-700">Masculino</option>
-                                <option value="Female" className="text-gray-700">Femenino</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg className="fill-current h-4 w-4" viewBox="0 0 20 20">
-                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                    <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="w-full flex flex-col gap-y-2">
-                <label>CURP<span className="text-red-500">*</span></label>
-                <div className="relative">
-                    <RiUserLine className="text-gray-500 absolute top-1/2 -translate-y-1/2 left-4" />
-                    <input id="Curp" type="text" value={CURP} onChange={(e) => setCurp(e.target.value)}
-                        className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg outline-none" placeholder="Escribe tu apellido materno" />
-                </div>
-            </div>
-            <div className="px-6 py-4 -10 flex justify-end space-x-2">
-                <button type="submit" className="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-900 transition-colors">
-                    Guardar
-                </button>
-            </div>
-
-        </form>
-    );
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="text-xl font-bold mb-2">Formulario de Paciente</h2>
+        <h3 className="text-lg font-medium my-4">{formTitle}</h3>
+        <Grid container spacing={3}>
+          {/* Inputs distribuidos */}
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Nombre(s)"
+              required
+              value={patient.name}
+              onChange={handleChange}
+              name="name"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Apellido Paterno"
+              required
+              value={patient.paternalLastName}
+              onChange={handleChange}
+              name="paternalLastName"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Apellido Materno"
+              required
+              value={patient.maternalLastName}
+              onChange={handleChange}
+              name="maternalLastName"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <DatePicker
+              label="Fecha de Nacimiento"
+              value={patient.birthdate}
+              onChange={handleDateChange}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth required />
+              )}
+              maxDate={dayjs()} // Prevent future dates
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Edad"
+              value={patient.age}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel id="gender-label">Género</InputLabel>
+              <Select
+                labelId="gender-label"
+                value={patient.gender}
+                label="Género"
+                onChange={handleChange}
+                name="gender"
+                required
+              >
+                <MenuItem value=""><em>Seleccione un género</em></MenuItem>
+                <MenuItem value="Male">Masculino</MenuItem>
+                <MenuItem value="Female">Femenino</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="CURP"
+              required
+              value={patient.CURP}
+              onChange={handleChange}
+              name="CURP"
+              inputProps={{ maxLength: 18 }}
+            />
+          </Grid>
+          {/* Botones de acción */}
+          <Grid item xs={12} className="flex justify-between">
+            <button
+              type="button"
+              className="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-900"
+              onClick={() => navigate("/Pacientes")}
+            >
+              Volver
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-900"
+            >
+              Guardar
+            </button>
+          </Grid>
+        </Grid>
+      </form>
+    </LocalizationProvider>
+  );
 };
 
 export default PatientForm;
+

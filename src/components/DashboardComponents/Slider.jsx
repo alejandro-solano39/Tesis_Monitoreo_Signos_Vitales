@@ -1,23 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MdLocalHospital, MdFavorite, MdAssessment, MdNotificationsActive, MdSettings, MdExitToApp } from 'react-icons/md';
-
-function getRandomColor() {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+import { BiHealth, BiUserCircle, BiNotification, BiAnalyse, BiCog, BiLogOut } from 'react-icons/bi';
 
 const Slider = () => {
   const navigate = useNavigate();
-  const firstName = sessionStorage.getItem('userFirstName');
-  const lastName = sessionStorage.getItem('userLastName');
+  const firstName = sessionStorage.getItem('userFirstName') || 'User';
+  const lastName = sessionStorage.getItem('userLastName') || 'Name';
   const fullName = `${firstName} ${lastName}`;
-  const initial = firstName ? firstName[0] : '';
-  const randomColor = getRandomColor();
+  const initial = firstName ? firstName[0] : 'U';
 
   const handleLogout = () => {
     sessionStorage.clear();
@@ -25,51 +15,52 @@ const Slider = () => {
   };
 
   return (
-    <div className="h-screen flex bg-gray-100">
-      <aside className="bg-white w-80 shadow-md min-h-screen flex flex-col justify-between">
+    <div className="h-screen bg-gray-50 flex">
+      <aside className="w-72 bg-white shadow-lg min-h-screen flex flex-col justify-between p-5">
         <div>
-          <div className="flex items-center justify-center p-6 border-b">
-            <span className="flex items-center justify-center h-12 w-12 rounded-full text-white text-xl font-medium" 
-                  style={{ backgroundColor: randomColor }}>
+          <div className="flex items-center space-x-4 p-2 mb-6">
+            <div className="shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-xl font-bold text-white">
               {initial}
-            </span>
-            <div className="ml-4 text-lg font-semibold text-gray-900">{fullName}</div>
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="font-semibold text-gray-900">{fullName}</span>
+              <span className="text-sm text-gray-500">Médico</span>
+            </div>
           </div>
-
-          <nav className="mt-4">
-          <ul className="space-y-2">
-            <li>
-              <Link to="/Dashboard" className="flex items-center gap-4 p-4 hover:bg-gray-100">
-                <MdLocalHospital className="w-6 h-6" /><span>Inicio</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/Pacientes" className="flex items-center gap-4 p-4 hover:bg-gray-100">
-                <MdFavorite className="w-6 h-6" /><span>Pacientes</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/Alertas" className="flex items-center gap-4 p-4 hover:bg-gray-100">
-                <MdNotificationsActive className="w-6 h-6" /><span>Alertas</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/Analiticas" className="flex items-center gap-4 p-4 hover:bg-gray-100">
-                <MdAssessment className="w-6 h-6" /><span>Análiticas</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/Settings" className="flex items-center gap-4 p-4 hover:bg-gray-100">
-                <MdSettings className="w-6 h-6" /><span>Ajustes</span>
-              </Link>
-            </li>
-          </ul>
+          <nav>
+            <ul>
+              <li className="mb-4">
+                <Link to="/dashboard" className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-100 transition duration-200 ease-in-out">
+                  <BiHealth className="text-blue-500 w-6 h-6"/><span className="ml-3">Dashboard</span>
+                </Link>
+              </li>
+              <li className="mb-4">
+                <Link to="/Pacientes" className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-100 transition duration-200 ease-in-out">
+                  <BiUserCircle className="text-blue-500 w-6 h-6"/><span className="ml-3">Pacientes</span>
+                </Link>
+              </li>
+              <li className="mb-4">
+                <Link to="/Alertas" className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-100 transition duration-200 ease-in-out">
+                  <BiNotification className="text-blue-500 w-6 h-6"/><span className="ml-3">Alertas</span>
+                </Link>
+              </li>
+              <li className="mb-4">
+                <Link to="/analytics" className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-100 transition duration-200 ease-in-out">
+                  <BiAnalyse className="text-blue-500 w-6 h-6"/><span className="ml-3">Análisis</span>
+                </Link>
+              </li>
+              <li className="mb-4">
+                <Link to="/settings" className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-100 transition duration-200 ease-in-out">
+                  <BiCog className="text-blue-500 w-6 h-6"/><span className="ml-3">Configuración</span>
+                </Link>
+              </li>
+            </ul>
           </nav>
         </div>
 
-        <div className="p-6 border-t">
-          <button onClick={handleLogout} className="w-full flex items-center gap-4 text-gray-700 hover:text-blue-600">
-            <MdExitToApp className="w-6 h-6" /><span>Cerrar sesión</span>
+        <div>
+          <button onClick={handleLogout} className="w-full flex items-center p-3 text-gray-700 hover:text-blue-700 rounded-lg transition duration-200 ease-in-out">
+            <BiLogOut className="w-6 h-6"/><span className="ml-3">Cerrar sesión</span>
           </button>
         </div>
       </aside>

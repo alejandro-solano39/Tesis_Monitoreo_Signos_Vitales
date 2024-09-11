@@ -14,7 +14,7 @@ import PatientTable from "./DashboardComponents/PatientTable"
 import DoctorWelcomeCard from "./DashboardComponents/DoctorWelcomeCard";
 import Note from "./DashboardComponents/Note"
 import AlertHistory from "./DashboardComponents/AlertHistoryHome";
-import PatientList from "./DashboardComponents/PatientList"
+import PatientList from "./Dash-pacientes/Prin-Pacientes"
 import HomeDashboard from "../pages/HomeDashboard"
 import PatientForm from "./DashboardComponents/PatientForm";
 import NewUsers from "../pages/NewUsers"

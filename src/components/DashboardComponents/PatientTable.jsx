@@ -36,50 +36,42 @@ function PatientTable() {
   }
 
   return (
-    <div className="bg-gray-100 p-2 sm:p-3 md:p-4 mx-auto max-w-full rounded-lg shadow-lg">
-      <h2 className="text-md sm:text-lg md:text-xl font-bold mb-3 md:mb-4 text-gray-800">Pacientes</h2>
-      <div className="overflow-x-auto shadow-md">
-        <table className="min-w-full text-center bg-white rounded-lg">
-          <thead className="bg-gray-200">
+    <div className="bg-white p-4 max-w-4xl mx-auto rounded-lg shadow">
+      <h2 className="text-lg font-semibold mb-4 text-gray-800">Pacientes</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm text-left bg-white">
+          <thead className="text-xs uppercase text-gray-500 bg-gray-100">
             <tr>
-              <th className="py-1 md:py-2 px-2 md:px-3 text-sm md:text-base">Imagen</th>
-              <th className="py-1 md:py-2 px-2 md:px-3 text-sm md:text-base">Nombre</th>
-              <th className="py-1 md:py-2 px-2 md:px-3 text-sm md:text-base">Edad</th>
-              <th className="py-1 md:py-2 px-2 md:px-3 text-sm md:text-base">Género</th>
-              <th className="py-1 md:py-2 px-2 md:px-3 text-sm md:text-base">Acciones</th>
+              <th className="py-3 px-6">Imagen</th>
+              <th className="py-3 px-6">Nombre</th>
+              <th className="py-3 px-6">Edad</th>
+              <th className="py-3 px-6">Género</th>
+              <th className="py-3 px-6">Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="text-gray-700">
             {patients.slice(0, maxPatientsToShow).map((patient, index) => (
-               <tr key={index} className="border-b">
-               <td className="py-4 px-6">
-                 <div className={`flex justify-center items-center rounded-full p-2 text-white text-lg ${patient.bgColor}`}>
-                   {getInitials(patient.name)}
-                 </div>
-               </td>
-               <td className="py-4 px-6">
-                 <span className="text-gray-700 font-medium">
-                   {`${patient.name} ${patient.paternalLastName} ${patient.maternalLastName}`}
-                 </span>
-               </td>
-               <td className="py-4 px-6">
-                 <span className="text-gray-700">{patient.age}</span>
-               </td>
-               <td className="py-4 px-6">
-                 <span className="text-gray-700">{patient.gender}</span>
-               </td>
-               <td className="py-4 px-6">
-                 <Link to={`/content/${patient.id}`} className="inline-flex justify-center items-center bg-blue-500 hover:bg-blue-600 rounded-full p-2 shadow-lg">
-                   <MdRemoveRedEye className="text-white text-lg" />
-                 </Link>
-               </td>
-             </tr>
+              <tr key={index} className="border-b last:border-b-0">
+                <td className="py-4 px-6">
+                  <div className={`flex justify-center items-center rounded-full h-10 w-10 text-white ${patient.bgColor}`}>
+                    {getInitials(patient.name)}
+                  </div>
+                </td>
+                <td className="py-4 px-6">{`${patient.name} ${patient.paternalLastName} ${patient.maternalLastName}`}</td>
+                <td className="py-4 px-6">{patient.age}</td>
+                <td className="py-4 px-6">{patient.gender}</td>
+                <td className="py-4 px-6">
+                  <Link to={`/content/${patient.id}`} className="flex justify-center items-center text-blue-500 hover:text-blue-600">
+                    <MdRemoveRedEye size="24" />
+                  </Link>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="mt-3 md:mt-4 text-right">
-        <Link to="/Pacientes" className="inline-block text-sm md:text-base text-blue-500 border border-blue-500 py-1 md:py-2 px-3 md:px-4 rounded-full hover:bg-blue-500 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      <div className="mt-4 text-right">
+        <Link to="/Pacientes" className="text-sm text-blue-500 border border-blue-500 py-2 px-4 rounded hover:bg-blue-500 hover:text-white transition-colors duration-200">
           Ver todos los pacientes
         </Link>
       </div>
